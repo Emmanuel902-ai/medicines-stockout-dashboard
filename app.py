@@ -1,4 +1,7 @@
+
+
 import os
+
 import json
 from pathlib import Path
 
@@ -7,7 +10,9 @@ import pandas as pd
 
 import joblib
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
-
+import warnings
+from sklearn.exceptions import InconsistentVersionWarning
+warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
