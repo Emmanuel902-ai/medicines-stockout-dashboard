@@ -1,0 +1,11 @@
+dash==3.3.0
+dash-bootstrap-components==2.0.4
+plotly==6.5.0
+
+pandas==2.3.3
+numpy==2.3.5
+statsmodels==0.14.5
+joblib==1.5.2
+
+xgboost==3.1.2
+scikit-learn==1.7.2

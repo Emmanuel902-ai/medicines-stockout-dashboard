@@ -1,0 +1,5 @@
+{
+  "low_upper": 0.2,
+  "medium_upper": 0.5,
+  "description": "Risk bands for 4-week stockout probability: p < low_upper -> Low, low_upper <= p < medium_upper -> Medium, p >= medium_upper -> High."
+}

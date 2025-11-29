@@ -1,0 +1,15 @@
+[
+  "closing_stock",
+  "quantity_dispensed",
+  "lag_stock_1",
+  "lag_stock_2",
+  "lag_stock_4",
+  "lag_disp_1",
+  "lag_disp_2",
+  "lag_disp_4",
+  "roll_disp_4w_mean",
+  "roll_disp_8w_mean",
+  "roll_stock_4w_min",
+  "sin_week",
+  "cos_week"
+]

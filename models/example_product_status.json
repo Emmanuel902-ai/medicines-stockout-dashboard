@@ -1,0 +1,13 @@
+{
+  "product_name": "AZT",
+  "current_week": "2022-12-26 00:00:00",
+  "closing_stock": 0.0,
+  "amc_8w": 190.875,
+  "lead_time_weeks": 8.0,
+  "projected_weeks_to_stockout": 0.0,
+  "projected_stockout_date": "2022-12-26 00:00:00",
+  "reorder_qty_leadtime": 1908.75,
+  "risk_4w": 1.0,
+  "risk_band": "High",
+  "alert_message": "\ud83d\udd34 High risk: expected stockout in 0.0 weeks. Place replenishment order immediately (lead time ~8 weeks)."
+}
