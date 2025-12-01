@@ -1,0 +1,66 @@
+/* Global app background */
+.app-container {
+    background-color: #f4f6f9;
+}
+
+/* Main row */
+.main-row {
+    min-height: 80vh;
+}
+
+/* Sidebar */
+.sidebar-column {
+    padding: 1.25rem;
+}
+
+.nav-links .nav-link {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    border-radius: 0.5rem;
+}
+
+.nav-links .nav-link.active {
+    box-shadow: 0 0.15rem 0.5rem rgba(0, 0, 0, 0.08);
+}
+
+/* Content area */
+.content-area {
+    background-color: #fdfdfd;
+}
+
+/* Cards */
+.card {
+    border-radius: 0.75rem;
+    border: 1px solid #e0e6ed;
+    box-shadow: 0 0.2rem 0.6rem rgba(15, 23, 42, 0.06);
+}
+
+.card-header {
+    background-color: #f8fafc;
+    font-weight: 600;
+}
+
+/* KPI headings */
+.card-title {
+    font-size: 1.5rem;
+}
+
+/* Make graphs sit nicely */
+.js-plotly-plot {
+    border-radius: 0.75rem;
+    background-color: #ffffff;
+    padding: 0.5rem;
+}
+
+/* Small note under sidebar */
+.small-note {
+    font-size: 0.8rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .sidebar-column {
+        border-right: none;
+        border-bottom: 1px solid #e0e6ed;
+    }
+}

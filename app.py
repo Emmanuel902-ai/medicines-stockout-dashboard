@@ -1,18 +1,16 @@
-
-
 import os
-
 import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
 import joblib
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
+
 import warnings
 from sklearn.exceptions import InconsistentVersionWarning
 warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
+
 import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
@@ -287,7 +285,9 @@ immediate_stockout = (current_status["projected_weeks_to_stockout"] <= 4).sum()
 # --------------------------------------------------
 # APP INIT
 # --------------------------------------------------
-external_stylesheets = [dbc.themes.BOOTSTRAP]
+external_stylesheets = [
+    dbc.themes.FLATLY,  # clean professional theme
+]
 
 app = dash.Dash(
     __name__,
@@ -302,60 +302,115 @@ product_options = [{"label": p, "value": p} for p in PRODUCTS]
 
 
 # --------------------------------------------------
+# GLOBAL HEADER & FOOTER
+# --------------------------------------------------
+header = dbc.Navbar(
+    dbc.Container(
+        [
+            html.Div(
+                [
+                    html.H2(
+                        "Essential Medicines – Stockout Early Warning",
+                        className="mb-0 text-white fw-semibold",
+                    ),
+                    html.Small(
+                        "Prototype analytics dashboard for planners and supply chain teams",
+                        className="text-white-50",
+                    ),
+                ],
+                className="d-flex flex-column",
+            ),
+        ],
+        fluid=True,
+    ),
+    color="primary",
+    dark=True,
+    className="shadow-sm mb-3",
+)
+
+footer = html.Footer(
+    dbc.Container(
+        html.Small(
+            "Prototype built on synthetic LMIS data – for demonstration and learning only.",
+            className="text-muted",
+        ),
+        fluid=True,
+    ),
+    className="py-3 border-top bg-white mt-3",
+)
+
+
+# --------------------------------------------------
 # LAYOUT – SIDEBAR + THREE TABS (MULTI-PAGE)
 # --------------------------------------------------
 sidebar = dbc.Col(
     [
-        html.H4("Medicines  Stockout", className="mt-4"),
-        html.H6("Essential Medicines Early Warning", className="text-muted"),
-        html.Hr(),
+        html.Div(
+            [
+                html.H5("Essential Medicines Dashboard", className="fw-bold mb-0"),
+                html.Small(
+                    "Stockout early warning system",
+                    className="text-muted",
+                ),
+            ],
+            className="mb-3",
+        ),
+        html.Hr(className="my-2"),
         dbc.Nav(
             [
                 dbc.NavLink("1. Forecasting", href="/forecasting", id="link-forecast"),
                 dbc.NavLink(
-                    "2. Early Warning", href="/early-warning", id="link-earlywarning"
+                    "2. Early Warning",
+                    href="/early-warning",
+                    id="link-earlywarning",
                 ),
                 dbc.NavLink(
-                    "3. Seasonality", href="/seasonality", id="link-seasonality"
+                    "3. Seasonality",
+                    href="/seasonality",
+                    id="link-seasonality",
                 ),
             ],
             vertical=True,
             pills=True,
+            className="nav-links",
         ),
-        html.Hr(),
+        html.Hr(className="my-3"),
         html.Div(
             [
                 html.Small(
-                    "Prototype built on synthetic LMIS data for demonstration only. "
-                    "Not for real clinical or procurement decisions.",
+                    "This is a research prototype – not for real clinical or procurement decisions.",
                     className="text-muted",
                 )
-            ]
+            ],
+            className="small-note",
         ),
     ],
     width=3,
-    className="bg-light sidebar",
+    className="bg-white sidebar-column border-end",
 )
 
 content = dbc.Col(
     [
         dcc.Location(id="url"),
-        html.Div(id="page-content", className="p-4"),
+        html.Div(id="page-content", className="p-3 p-md-4 content-area"),
     ],
     width=9,
 )
 
 app.layout = dbc.Container(
     [
+        header,
         dbc.Row(
             [
                 sidebar,
                 content,
             ],
-            className="g-0",
-        )
+            className="g-0 main-row",
+        ),
+        footer,
     ],
     fluid=True,
+    className="app-container",
 )
 
 
@@ -369,7 +424,9 @@ def layout_overview_cards():
                 dbc.Card(
                     [
                         dbc.CardHeader("Products monitored"),
-                        dbc.CardBody(html.H3(f"{total_products}", className="card-title")),
+                        dbc.CardBody(
+                            html.H3(f"{total_products}", className="card-title")
+                        ),
                     ]
                 ),
                 md=3,
@@ -379,7 +436,9 @@ def layout_overview_cards():
                     [
                         dbc.CardHeader("High-risk SKUs (4-week horizon)"),
                         dbc.CardBody(
-                            html.H3(f"{high_risk}", className="card-title text-danger")
+                            html.H3(
+                                f"{high_risk}", className="card-title text-danger"
+                            )
                         ),
                     ]
                 ),
@@ -390,7 +449,9 @@ def layout_overview_cards():
                     [
                         dbc.CardHeader("Medium-risk SKUs"),
                         dbc.CardBody(
-                            html.H3(f"{medium_risk}", className="card-title text-warning")
+                            html.H3(
+                                f"{medium_risk}", className="card-title text-warning"
+                            )
                         ),
                     ]
                 ),
@@ -565,7 +626,7 @@ def layout_seasonality_page():
             html.H3("3. Seasonality Insights – Disease & Demand Patterns"),
             html.P(
                 "Average weekly demand by week-of-year helps align procurement with "
-                "malaria, diarrhoea, and NCD seasonality (e.g., AL, ORS, Zinc, Insulin).",
+                "seasonal patterns (e.g., malaria, diarrhoeal disease, NCDs).",
                 className="text-muted",
             ),
             html.Hr(),
@@ -599,8 +660,7 @@ def layout_seasonality_page():
                                 [
                                     html.Li(
                                         "Peaks indicate periods of higher demand – "
-                                        "e.g., malaria season for AL, rainy season "
-                                        "for diarrhoeal disease (ORS, Zinc)."
+                                        "for example, malaria season or rainy season."
                                     ),
                                     html.Li(
                                         "Procurement teams can align framework contracts "
