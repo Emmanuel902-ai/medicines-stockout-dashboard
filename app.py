@@ -11,11 +11,23 @@ import warnings
 from sklearn.exceptions import InconsistentVersionWarning
 warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
+import logging
 import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import plotly.express as px
+
+
+# --------------------------------------------------
+# LOGGING SETUP
+# --------------------------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+logger.info("Starting Essential Medicines Stockout Early Warning dashboard.")
 
 
 # --------------------------------------------------
@@ -26,25 +38,79 @@ DATA_DIR = BASE_DIR / "data"
 MODELS_DIR = BASE_DIR / "models"
 
 # Main LMIS-style time series
-df = pd.read_csv(DATA_DIR / "synthetic_lmis_dataset.csv", parse_dates=["week_start"])
+try:
+    df = pd.read_csv(DATA_DIR / "synthetic_lmis_dataset.csv", parse_dates=["week_start"])
+    logger.info(
+        "Loaded synthetic LMIS dataset from %s with %d rows.",
+        DATA_DIR / "synthetic_lmis_dataset.csv",
+        len(df),
+    )
+except Exception as e:
+    logger.exception("Failed to load main LMIS dataset.")
+    raise RuntimeError(
+        "Failed to load main LMIS dataset. "
+        "Check that data/synthetic_lmis_dataset.csv exists and is readable."
+    ) from e
 
 # Current status / risk table (already enriched in Colab)
-current_status = pd.read_csv(
-    DATA_DIR / "current_status_stockout_risk.csv",
-    parse_dates=["current_week", "projected_stockout_date"],
-)
+try:
+    current_status = pd.read_csv(
+        DATA_DIR / "current_status_stockout_risk.csv",
+        parse_dates=["current_week", "projected_stockout_date"],
+    )
+    logger.info(
+        "Loaded current status / stockout risk table from %s with %d rows.",
+        DATA_DIR / "current_status_stockout_risk.csv",
+        len(current_status),
+    )
+except Exception as e:
+    logger.exception("Failed to load current status / stockout risk table.")
+    raise RuntimeError(
+        "Failed to load current status / stockout risk table. "
+        "Check that data/current_status_stockout_risk.csv exists and is readable."
+    ) from e
 
 # Seasonality (weekly demand pattern)
-seasonality = pd.read_csv(DATA_DIR / "seasonality_by_week_of_year.csv")
+try:
+    seasonality = pd.read_csv(DATA_DIR / "seasonality_by_week_of_year.csv")
+    logger.info(
+        "Loaded seasonality table from %s with %d rows.",
+        DATA_DIR / "seasonality_by_week_of_year.csv",
+        len(seasonality),
+    )
+except Exception as e:
+    logger.exception("Failed to load seasonality table.")
+    raise RuntimeError(
+        "Failed to load seasonality table. "
+        "Check that data/seasonality_by_week_of_year.csv exists and is readable."
+    ) from e
 
 # Feature order for ML (if you ever want to re-score from raw features)
-with open(MODELS_DIR / "feature_order.json", "r") as f:
-    feature_order = json.load(f)
+try:
+    with open(MODELS_DIR / "feature_order.json", "r") as f:
+        feature_order = json.load(f)
+    logger.info("Loaded feature_order.json from %s.", MODELS_DIR)
+except Exception as e:
+    logger.exception("Failed to load feature_order.json.")
+    raise RuntimeError(
+        "Failed to load feature_order.json. "
+        "Check that models/feature_order.json exists and is readable."
+    ) from e
 
 # Calibrated models (not strictly required for the dashboard,
 # because risk_4w is already in current_status, but we keep them loaded).
-xgb_cal = joblib.load(MODELS_DIR / "xgb_stockout_calibrated.pkl")
-rf_cal = joblib.load(MODELS_DIR / "rf_stockout_calibrated.pkl")
+try:
+    xgb_cal = joblib.load(MODELS_DIR / "xgb_stockout_calibrated.pkl")
+    rf_cal = joblib.load(MODELS_DIR / "rf_stockout_calibrated.pkl")
+    logger.info("Loaded calibrated models from %s.", MODELS_DIR)
+except Exception as e:
+    logger.exception(
+        "Failed to load calibrated models (xgb_stockout_calibrated.pkl / rf_stockout_calibrated.pkl). "
+        "Dashboard will continue using precomputed risk_4w values."
+    )
+    # Models are optional for this prototype – keep app running
+    xgb_cal = None
+    rf_cal = None
 
 # Basic sanity checks
 df = df.sort_values(["product_name", "week_start"]).reset_index(drop=True)
@@ -54,6 +120,7 @@ seasonality = seasonality.sort_values(["product_name", "week_of_year"]).reset_in
 )
 
 PRODUCTS = current_status["product_name"].tolist()
+logger.info("Initialised dashboard with %d products.", len(PRODUCTS))
 
 
 # --------------------------------------------------
@@ -709,6 +776,7 @@ def display_page(pathname):
     Input("forecast-product-dropdown", "value"),
 )
 def update_forecast_page(product_name):
+    logger.info("Updating forecasting view for product: %s", product_name)
     demand_fig = make_forecast_figure(product_name)
     stock_fig = make_stock_timeseries_figure(product_name)
     return demand_fig, stock_fig
@@ -729,6 +797,7 @@ def update_forecast_page(product_name):
     Input("ew-product-dropdown", "value"),
 )
 def update_early_warning(product_name):
+    logger.info("Updating early-warning panel for product: %s", product_name)
     row = current_status[current_status["product_name"] == product_name].iloc[0]
 
     stock = row["closing_stock"]
@@ -793,6 +862,7 @@ def update_early_warning(product_name):
     Input("seasonality-product-dropdown", "value"),
 )
 def update_seasonality_page(product_name):
+    logger.info("Updating seasonality view for product: %s", product_name)
     return make_seasonality_figure(product_name)
 
 
@@ -800,5 +870,6 @@ def update_seasonality_page(product_name):
 # MAIN
 # --------------------------------------------------
 if __name__ == "__main__":
-    # For VS Code debugging / local run
+    # For local debugging / development
+    logger.info("Running Dash app in debug mode on port 8050.")
     app.run(host="0.0.0.0", port=8050, debug=True)
